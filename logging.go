@@ -4,7 +4,8 @@ package logging
 
 import (
 	"fmt"
-	"log"
+	"io"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -50,13 +51,19 @@ func (level Level) String() string {
 
 // A Logger writes out log messages
 type Logger struct {
-	Name  string
-	Level Level
+	Name   string
+	Level  Level
+	Writer io.Writer
 }
 
-// Allow the log level to be reset
+// Set the minimum log level 
 func (l *Logger) SetLevel(level Level) {
 	l.Level = level
+}
+
+// Set the output destination
+func (l *Logger) SetWriter(w io.Writer) {
+	l.Writer = w
 }
 
 // Log a message
@@ -65,12 +72,14 @@ func (l *Logger) Log(level Level, format string, v ...interface{}) {
 		return
 	}
 
-	log.Printf("%s %s %s: %s\n", time.Now().Format(tsFormat), l.Name, level,
-		fmt.Sprintf(format, v...))
+	buf := []byte(fmt.Sprintf("%s %s %s: %s\n", time.Now().Format(tsFormat),
+		l.Name, level, fmt.Sprintf(format, v...)))
+
+	l.Writer.Write(buf)
 }
 
 //-----------------------------------------------------------------------------
-// Default logger uses the console
+// Default logger
 
 func newDefaultLogger() *Logger {
 	// Use the filename as the default name
@@ -83,39 +92,45 @@ func newDefaultLogger() *Logger {
 	}
 
 	l := &Logger{
-		Name:  name,
-		Level: TRACE,
+		Name:   name,
+		Level:  TRACE,
+		Writer: os.Stderr,
 	}
 
 	return l
 }
 
-var console = newDefaultLogger()
+var std = newDefaultLogger()
 
 func SetLevel(level Level) {
-	console.SetLevel(level)
+	std.SetLevel(level)
+}
+
+func SetWriter(w io.Writer) {
+	std.SetWriter(w)
 }
 
 func Stats(format string, v ...interface{}) {
-	console.Log(STATS, format, v...)
+	std.Log(STATS, format, v...)
 }
 
 func Fatal(format string, v ...interface{}) {
-	console.Log(FATAL, format, v...)
+	std.Log(FATAL, format, v...)
+	os.Exit(1)
 }
 
 func Error(format string, v ...interface{}) {
-	console.Log(ERROR, format, v...)
+	std.Log(ERROR, format, v...)
 }
 
 func Warn(format string, v ...interface{}) {
-	console.Log(WARN, format, v...)
+	std.Log(WARN, format, v...)
 }
 
 func Info(format string, v ...interface{}) {
-	console.Log(INFO, format, v...)
+	std.Log(INFO, format, v...)
 }
 
 func Debug(format string, v ...interface{}) {
-	console.Log(DEBUG, format, v...)
+	std.Log(DEBUG, format, v...)
 }
