@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -51,12 +52,13 @@ func (level Level) String() string {
 
 // A Logger writes out log messages
 type Logger struct {
+	mu     sync.Mutex
 	Name   string
 	Level  Level
 	Writer io.Writer
 }
 
-// Set the minimum log level 
+// Set the minimum log level
 func (l *Logger) SetLevel(level Level) {
 	l.Level = level
 }
@@ -71,6 +73,9 @@ func (l *Logger) Log(level Level, format string, v ...interface{}) {
 	if level < l.Level {
 		return
 	}
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	buf := []byte(fmt.Sprintf("%s %s %s: %s\n", time.Now().Format(tsFormat),
 		l.Name, level, fmt.Sprintf(format, v...)))
