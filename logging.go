@@ -21,7 +21,7 @@ const (
 	WARN
 	ERROR
 	FATAL
-    STATS
+	STATS
 )
 
 // Log levels are used to control the level of verbosity in the logs
