@@ -68,6 +68,11 @@ func (l *Logger) SetWriter(w io.Writer) {
 	l.Writer = w
 }
 
+// Set the logger name
+func (l *Logger) SetName(name string) {
+	l.Name = name
+}
+
 // Log a message
 func (l *Logger) Log(level Level, format string, v ...interface{}) {
 	if level < l.Level {
