@@ -98,7 +98,7 @@ func newDefaultLogger() *Logger {
 	_, file, _, ok := runtime.Caller(2)
 
 	if ok {
-		name = fmt.Sprintf("%s[%d]", filepath.Base(file), os.Getpid)
+		name = fmt.Sprintf("%s[%d]", filepath.Base(file), os.Getpid())
 	}
 
 	l := &Logger{
