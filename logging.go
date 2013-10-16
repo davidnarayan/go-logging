@@ -92,13 +92,13 @@ func (l *Logger) Log(level Level, format string, v ...interface{}) {
 // Default logger
 
 func newDefaultLogger() *Logger {
-	// Use the filename as the default name
+	// Use the filename and pid as the default name
 	var name string
 
 	_, file, _, ok := runtime.Caller(2)
 
 	if ok {
-		name = filepath.Base(file)
+		name = fmt.Sprintf("%s[%d]", filepath.Base(file), os.Getpid)
 	}
 
 	l := &Logger{
