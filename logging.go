@@ -144,3 +144,7 @@ func Info(format string, v ...interface{}) {
 func Debug(format string, v ...interface{}) {
 	std.Log(DEBUG, format, v...)
 }
+
+func Trace(format string, v ...interface{}) {
+	std.Log(TRACE, format, v...)
+}
