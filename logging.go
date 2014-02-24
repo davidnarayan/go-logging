@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -79,11 +81,40 @@ func (l *Logger) Log(level Level, format string, v ...interface{}) {
 		return
 	}
 
+	now := time.Now()
+
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	name := l.Name
+	var trace string
 
-	buf := []byte(fmt.Sprintf("%s %s %s: %s\n", time.Now().Format(tsFormat),
-		l.Name, level, fmt.Sprintf(format, v...)))
+	// Trace info
+	if l.Level == TRACE {
+		_, file, line, ok := runtime.Caller(2)
+
+		if !ok {
+			file = "???"
+			line = 0
+		} else {
+			slash := strings.LastIndex(file, "/")
+			if slash >= 0 {
+				file = file[slash+1:]
+			}
+		}
+
+		var trc []string
+		trc = append(trc, "")
+
+		if file != name[0:len(file)] {
+			trc = append(trc, file)
+		}
+
+		trc = append(trc, strconv.Itoa(line))
+		trace = strings.Join(trc, ":")
+	}
+
+	buf := []byte(fmt.Sprintf("%s %s%s %s: %s\n", now.Format(tsFormat), name,
+		trace, level, fmt.Sprintf(format, v...)))
 
 	l.Writer.Write(buf)
 }
