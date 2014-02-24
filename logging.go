@@ -105,7 +105,7 @@ func (l *Logger) Log(level Level, format string, v ...interface{}) {
 		var trc []string
 		trc = append(trc, "")
 
-		if file != name[0:len(file)] {
+		if !strings.HasPrefix(name, file) {
 			trc = append(trc, file)
 		}
 
