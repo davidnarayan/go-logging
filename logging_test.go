@@ -1,9 +1,9 @@
 package logging
 
 import (
+	"bytes"
 	"os"
 	"testing"
-    "bytes"
 )
 
 var levelTests = []struct {
@@ -20,11 +20,11 @@ var levelTests = []struct {
 }
 
 type mockWriter struct {
-    buf bytes.Buffer
+	buf bytes.Buffer
 }
 
 func (m *mockWriter) Write(p []byte) (n int, err error) {
-    return m.buf.Write(p)
+	return m.buf.Write(p)
 }
 
 func TestLevelStrings(t *testing.T) {
@@ -73,13 +73,36 @@ func TestSetName(t *testing.T) {
 }
 
 func TestLog(t *testing.T) {
-    msg := "test message"
-    want := []byte("TRACE: test message")
-    w := &mockWriter{}
+	msg := "test message"
+	want := []byte("TRACE: test message")
+	w := &mockWriter{}
 	l := &Logger{Writer: w}
-    l.Log(TRACE, msg)
+	l.Log(TRACE, msg)
 
 	if bytes.HasSuffix(w.buf.Bytes(), []byte(want)) {
 		t.Errorf("Log(%q): got: %q, want %q (%s)", msg, w.buf.String(), want)
 	}
+}
+
+// Benchmarks
+
+func benchmarkLog(lvl Level, b *testing.B) {
+	w := &mockWriter{}
+	l := &Logger{
+		Name:   "BenchmarkLogger",
+		Level:  lvl,
+		Writer: w,
+	}
+
+	for n := 0; n < b.N; n++ {
+		l.Log(lvl, "test")
+	}
+}
+
+func BenchmarkLogTrace(b *testing.B) {
+	benchmarkLog(TRACE, b)
+}
+
+func BenchmarkLogDebug(b *testing.B) {
+	benchmarkLog(DEBUG, b)
 }
